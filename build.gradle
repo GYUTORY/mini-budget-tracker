@@ -1,39 +1,71 @@
+// 프로젝트에 사용할 Gradle 플러그인 선언
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '3.2.3'
-    id 'io.spring.dependency-management' version '1.1.4'
+    id 'java' // Java 컴파일 및 빌드 지원
+    id 'org.springframework.boot' version '3.2.3' // Spring Boot 플러그인 (실행/빌드 자동화)
+    id 'io.spring.dependency-management' version '1.1.4' // 의존성 버전 자동 관리 (Spring BOM 사용)
+    id 'groovy' // Groovy 언어 지원 (Spock 테스트를 위한 필수 플러그인)
 }
 
+// 그룹 ID와 버전 설정 (패키징 시 사용됨)
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
+// 자바 버전 설정 (Java 17 사용)
 java {
     sourceCompatibility = '17'
 }
 
+// 컴파일 전용 설정: annotationProcessor가 compileOnly에도 포함되도록 설정
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
 }
 
+// 의존성 저장소 설정 (Maven Central을 사용)
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.projectlombok:lombok'
-    
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+// 버전 변수 선언: 한 곳에서 관리 가능하도록
+ext {
+    spockVersion = '2.4-M1-groovy-4.0' // Spock (Groovy 4용)
+    testcontainersVersion = '1.19.7'   // Testcontainers 최신 버전
 }
 
+// 의존성 선언 블록
+dependencies {
+    // ✅ 애플리케이션 의존성
+
+    implementation 'org.springframework.boot:spring-boot-starter-web' // 웹 애플리케이션 (MVC, REST API)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // JPA + Hibernate 설정
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // 서버 사이드 템플릿 엔진
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // Bean Validation (ex: @Valid)
+    implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security (로그인, 인증, 인가)
+
+    compileOnly 'org.projectlombok:lombok' // Lombok: 개발 편의용 (컴파일 시에만 필요)
+    annotationProcessor 'org.projectlombok:lombok' // Lombok용 Annotation Processor
+    runtimeOnly 'com.mysql:mysql-connector-j' // MySQL 드라이버 (실행 시에만 필요)
+
+    // ✅ 테스트 의존성 (Groovy + Spock + Testcontainers + Spring Boot Test)
+
+    // Spock 프레임워크 (테스트 작성용)
+    testImplementation "org.spockframework:spock-core:${spockVersion}" // Spock 기본 기능
+    testImplementation "org.spockframework:spock-spring:${spockVersion}" // Spring 통합용 Spock 확장
+
+    // Testcontainers (테스트 시 Docker 컨테이너로 MySQL 등 띄우기 위함)
+    testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}" // 기본 기능
+    testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}" // JUnit 5와 통합
+    testImplementation "org.testcontainers:mysql:${testcontainersVersion}" // MySQL 컨테이너 지원
+
+    // Spring Boot Test (MockMvc, @SpringBootTest 등)
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Spring Security 테스트 전용 유틸 (ex: 인증/인가 처리 테스트)
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+// 테스트 실행 시 JUnit Platform 사용 설정 (JUnit 5 기반)
 tasks.named('test') {
     useJUnitPlatform()
-} 
+}
