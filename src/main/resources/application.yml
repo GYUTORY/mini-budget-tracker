@@ -1,18 +1,47 @@
 spring:
   datasource:
+    # MySQL 데이터베이스 연결 설정
     url: jdbc:mysql://localhost:3306/budget_tracker?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   
   jpa:
+    # JPA 설정
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: update  # 애플리케이션 시작 시 테이블 자동 생성/수정
+    show-sql: true      # SQL 쿼리 로그 출력
     properties:
       hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true  # SQL 쿼리 포맷팅
+        dialect: org.hibernate.dialect.MySQLDialect  # MySQL 방언 설정
 
 server:
-  port: 8080 
+  port: 8080  # 서버 포트 설정
+
+encryption:
+  aes:
+    # AES 암호화 키 (32바이트)
+    # 사용자 이름 암호화에 사용됨
+    key: "12345678901234567890123456789012"
+
+jwt:
+  # JWT 토큰 설정
+  secret: "12345678901234567890123456789012"  # JWT 서명용 키 (32바이트)
+  expiration: 86400000  # 토큰 만료 시간 (24시간, 밀리초)
+
+logging:
+  level:
+    root: INFO
+    # 애플리케이션 관련 로그 레벨 설정
+    com.example.budgettracker: DEBUG
+    # Spring Security 관련 로그 레벨
+    org.springframework.security: DEBUG
+    # Spring Web 관련 로그 레벨
+    org.springframework.web: DEBUG
+    # Hibernate 관련 로그 레벨
+    org.hibernate: INFO
+    # SQL 쿼리 로그 레벨
+    org.hibernate.SQL: DEBUG
+    # SQL 파라미터 바인딩 로그 레벨
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE 

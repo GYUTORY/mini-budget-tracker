@@ -1,11 +1,12 @@
 package com.example.budgettracker.domain.user.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * 사용자(User) 정보를 담는 JPA 엔티티 클래스
@@ -13,26 +14,20 @@ import java.time.LocalDateTime;
 @Entity // 이 클래스가 JPA의 엔티티임을 선언 (DB 테이블과 매핑됨)
 @Table(name = "users") // DB에서 매핑될 테이블 이름 지정 (기본은 클래스명 → 여기선 "users"로 명시적 지정)
 @Getter // Lombok: 모든 필드에 대한 Getter 자동 생성
-@NoArgsConstructor // Lombok: 파라미터 없는 기본 생성자 자동 생성
-@AllArgsConstructor // Lombok: 모든 필드를 받는 생성자 자동 생성
-@Builder // Lombok: Builder 패턴을 통해 객체 생성 가능하게 함
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // Lombok: 파라미터 없는 기본 생성자 자동 생성
 public class User {
 
-    @Id // 기본 키(PK) 지정
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
-    // 기본 키 자동 생성 전략: DB에서 AUTO_INCREMENT 사용
-    private Long id;
+    @Id
+    @Column(length = 36)
+    private String id;
 
-    @Column(unique = true, nullable = false, length = 50) 
-    // 이메일은 중복되면 안 되고(null 불가), 최대 길이 제한
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
-    // 비밀번호는 필수 입력
     private String password;
 
-    @Column(nullable = false, length = 30)
-    // 사용자 이름도 필수이며, 길이 제한
+    @Column(nullable = false)
     private String name;
 
     @Column(name = "created_at")
@@ -49,6 +44,9 @@ public class User {
      */
     @PrePersist
     public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID().toString().replace("-", "");
+        }
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -60,5 +58,13 @@ public class User {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    @Builder
+    public User(String id, String email, String password, String name) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.name = name;
     }
 }
