@@ -15,12 +15,12 @@ import java.util.Base64;
 @Component
 public class AESUtil {
 
-    /**
-     * application.yml에서 설정된 AES 암호화 키를 주입받음
-     * @Value 어노테이션을 통해 설정 파일의 값을 자동으로 주입
-     */
-    @Value("${encryption.aes.key}")
-    private String secretKey;
+    private final SecretKeySpec secretKey;
+
+    public AESUtil(@Value("${aes.secret}") String secret) {
+        byte[] key = secret.getBytes(StandardCharsets.UTF_8);
+        this.secretKey = new SecretKeySpec(key, "AES");
+    }
 
     /**
      * AES 암호화 메서드
@@ -37,18 +37,12 @@ public class AESUtil {
      */
     public String encrypt(String value) {
         try {
-            // AES 알고리즘에 사용할 키 생성 (32바이트)
-            SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "AES");
-            // AES 암호화 인스턴스 생성 (ECB 모드, PKCS5Padding)
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            // 암호화 모드로 초기화
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            // 입력 문자열을 암호화
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] encryptedBytes = cipher.doFinal(value.getBytes());
-            // 암호화된 바이트 배열을 Base64 문자열로 변환
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
-            throw new RuntimeException("이름 암호화 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("Failed to encrypt value", e);
         }
     }
 
@@ -65,20 +59,14 @@ public class AESUtil {
      * 4. Base64로 인코딩된 문자열을 디코딩하여 바이트 배열로 변환
      * 5. 암호화된 바이트 배열을 복호화하여 원본 문자열로 반환
      */
-    public String decrypt(String encrypted) {
+    public String decrypt(String encryptedValue) {
         try {
-            // AES 알고리즘에 사용할 키 생성 (32바이트)
-            SecretKeySpec key = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "AES");
-            // AES 복호화 인스턴스 생성 (ECB 모드, PKCS5Padding)
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            // 복호화 모드로 초기화
-            cipher.init(Cipher.DECRYPT_MODE, key);
-            // Base64 문자열을 디코딩하고 복호화
-            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encrypted));
-            // 복호화된 바이트 배열을 문자열로 변환
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedValue));
             return new String(decryptedBytes);
         } catch (Exception e) {
-            throw new RuntimeException("이름 복호화 중 오류가 발생했습니다.", e);
+            throw new RuntimeException("Failed to decrypt value", e);
         }
     }
 } 
