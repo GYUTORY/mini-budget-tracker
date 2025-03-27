@@ -15,6 +15,7 @@ spring:
       hibernate:
         format_sql: true  # SQL 쿼리 포맷팅
         dialect: org.hibernate.dialect.MySQLDialect  # MySQL 방언 설정
+    database-platform: org.hibernate.dialect.H2Dialect
 
 server:
   port: 8080  # 서버 포트 설정
@@ -29,6 +30,7 @@ jwt:
   # JWT 토큰 설정
   secret: "12345678901234567890123456789012"  # JWT 서명용 키 (32바이트)
   expiration: 86400000  # 토큰 만료 시간 (24시간, 밀리초)
+  token-validity-in-seconds: 86400  # 24 hours
 
 logging:
   level:
@@ -44,4 +46,9 @@ logging:
     # SQL 쿼리 로그 레벨
     org.hibernate.SQL: DEBUG
     # SQL 파라미터 바인딩 로그 레벨
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE 
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+h2:
+  console:
+    enabled: true
+    path: /h2-console 
