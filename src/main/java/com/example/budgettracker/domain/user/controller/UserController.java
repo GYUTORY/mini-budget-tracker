@@ -21,7 +21,7 @@ import java.util.Map;
  * 사용자 인증 관련 API를 제공하는 컨트롤러
  */
 @RestController // 이 클래스가 REST API 컨트롤러임을 명시 (JSON 반환)
-@RequestMapping("/api/auth") // 이 컨트롤러의 공통 URL Prefix 지정
+@RequestMapping("/api/users") // 이 컨트롤러의 공통 URL Prefix 지정
 @RequiredArgsConstructor // Lombok: final 필드를 자동으로 생성자 주입
 public class UserController {
 
@@ -37,13 +37,13 @@ public class UserController {
 
     /**
      * 회원가입 API
-     * POST /api/auth/signup
+     * POST /api/users/signup
      *
      * @param request 클라이언트가 보낸 회원가입 요청 DTO
      * @return 회원가입 결과 DTO와 201(CREATED) 상태 코드
      */
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<SignupResponse>> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<ApiResponse<SignupResponse>> signup(@Valid @RequestBody SignupRequest request) {
         SignupResponse response = userService.signup(request);
         return ResponseEntity.ok(ApiResponse.success(response, "회원가입이 완료되었습니다."));
     }
@@ -71,11 +71,11 @@ public class UserController {
 
     /**
      * 마이페이지 조회 API
-     * POST /api/auth/mypage
+     * GET /api/users/me
      *
      * @return 사용자 정보
      */
-    @PostMapping("/mypage")
+    @GetMapping("/me")
     public ResponseEntity<ApiResponse<SignupResponse>> getMyPage() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userId = auth.getName();

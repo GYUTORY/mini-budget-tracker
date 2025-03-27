@@ -1,7 +1,7 @@
 package com.example.budgettracker.domain.user.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,11 +14,12 @@ import java.util.UUID;
 @Entity // 이 클래스가 JPA의 엔티티임을 선언 (DB 테이블과 매핑됨)
 @Table(name = "users") // DB에서 매핑될 테이블 이름 지정 (기본은 클래스명 → 여기선 "users"로 명시적 지정)
 @Getter // Lombok: 모든 필드에 대한 Getter 자동 생성
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // Lombok: 파라미터 없는 기본 생성자 자동 생성
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
-    @Column(length = 36)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Column(nullable = false, unique = true)

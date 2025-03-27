@@ -1,5 +1,6 @@
 package com.example.budgettracker.domain.user.dto;
 
+import com.example.budgettracker.domain.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,4 +19,11 @@ public class SignupResponse {
     private String email;   // 사용자의 이메일 (중복 확인된 값)
     private String name;    // 사용자의 이름
 
+    public static SignupResponse from(User user) {
+        return SignupResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .build();
+    }
 }

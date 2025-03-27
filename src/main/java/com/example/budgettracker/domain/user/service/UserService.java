@@ -1,15 +1,16 @@
 package com.example.budgettracker.domain.user.service;
 
+import com.example.budgettracker.domain.user.User;
 import com.example.budgettracker.domain.user.dto.LoginRequest;
 import com.example.budgettracker.domain.user.dto.LoginResponse;
 import com.example.budgettracker.domain.user.dto.SignupRequest;
 import com.example.budgettracker.domain.user.dto.SignupResponse;
 import com.example.budgettracker.domain.user.dto.UpdateProfileRequest;
-import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.repository.UserRepository;
-import com.example.budgettracker.global.exception.BusinessException;
-import com.example.budgettracker.global.security.JwtTokenProvider;
+import com.example.budgettracker.global.error.BusinessException;
+import com.example.budgettracker.global.error.ErrorCode;
 import com.example.budgettracker.global.util.AESUtil;
+import com.example.budgettracker.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,104 +20,67 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;
     private final AESUtil aesUtil;
 
-    @Transactional
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     public SignupResponse signup(SignupRequest request) {
-        // 이메일 중복 체크
         if (existsByEmail(request.getEmail())) {
-            throw new BusinessException("이미 사용 중인 이메일입니다.");
+            throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
-        // 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        // 이름 암호화
-        String encryptedName = aesUtil.encrypt(request.getName());
-
-        // 사용자 엔티티 생성 및 저장
         User user = User.builder()
                 .email(request.getEmail())
-                .password(encodedPassword)
-                .name(encryptedName)
+                .password(passwordEncoder.encode(request.getPassword()))
+                .name(aesUtil.encrypt(request.getName()))
                 .build();
 
         userRepository.save(user);
-
-        // 응답 생성
-        return SignupResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(aesUtil.decrypt(user.getName()))
-                .build();
+        return SignupResponse.from(user);
     }
 
-    @Transactional
     public LoginResponse login(LoginRequest request) {
-        // 이메일로 사용자 찾기
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("이메일 또는 비밀번호가 일치하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 비밀번호 확인
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BusinessException("이메일 또는 비밀번호가 일치하지 않습니다.");
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // JWT 토큰 생성
-        String token = jwtTokenProvider.createToken(user.getId());
-
-        // 응답 생성
+        String token = jwtUtil.generateToken(user.getId());
         return LoginResponse.builder()
                 .token(token)
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(aesUtil.decrypt(user.getName()))
                 .build();
     }
 
-    @Transactional
     public void logout(String userId) {
-        // 현재 사용자의 토큰을 무효화
-        jwtTokenProvider.invalidateToken(userId);
-    }
-
-    public SignupResponse getUserInfo(String userId) {
-        // 사용자 찾기
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
-
-        // 응답 생성
-        return SignupResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(aesUtil.decrypt(user.getName()))
-                .build();
+        // JWT 토큰은 클라이언트 측에서 삭제하므로 서버 측에서는 특별한 처리가 필요하지 않습니다.
     }
 
     @Transactional
     public SignupResponse updateProfile(String userId, UpdateProfileRequest request) {
-        // 사용자 찾기
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 이름 암호화
-        String encryptedName = aesUtil.encrypt(request.getName());
-        
-        // 사용자 정보 업데이트
-        user.updateName(encryptedName);
+        if (request.getName() != null) {
+            user.updateName(aesUtil.encrypt(request.getName()));
+        }
 
-        // 응답 생성
-        return SignupResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(aesUtil.decrypt(user.getName()))
-                .build();
+        if (request.getPassword() != null) {
+            user.updatePassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        return SignupResponse.from(user);
     }
 
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public SignupResponse getUserInfo(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return SignupResponse.from(user);
     }
 }
