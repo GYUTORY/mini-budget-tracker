@@ -25,7 +25,6 @@
 
 - **JWT 기반 인증**: 로그인 성공 시 JWT 토큰 발급
 - **토큰 관리**: Access Token과 Refresh Token을 통한 인증 유지
-- **권한 관리**: 사용자 역할(Role)에 따른 기능 접근 제어
 - **소셜 로그인**: Google, Kakao 등 OAuth2 기반 소셜 로그인 지원
 
 ### 3. 거래 관리
