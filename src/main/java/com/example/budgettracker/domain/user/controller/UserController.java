@@ -4,6 +4,7 @@ import com.example.budgettracker.domain.user.dto.LoginRequest;
 import com.example.budgettracker.domain.user.dto.LoginResponse;
 import com.example.budgettracker.domain.user.dto.SignupRequest;
 import com.example.budgettracker.domain.user.dto.SignupResponse;
+import com.example.budgettracker.domain.user.dto.UpdateProfileRequest;
 import com.example.budgettracker.domain.user.service.UserService;
 import com.example.budgettracker.global.dto.ApiResponse;
 import jakarta.validation.Valid;
@@ -80,5 +81,19 @@ public class UserController {
         String userId = auth.getName();
         SignupResponse response = userService.getUserInfo(userId);
         return ResponseEntity.ok(ApiResponse.success(response, "마이페이지 조회가 완료되었습니다."));
+    }
+
+    /**
+     * 프로필 수정 API
+     * PUT /api/auth/profile
+     * 
+     * @param request 프로필 수정 요청 정보
+     * @return 수정된 사용자 정보
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<SignupResponse>> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        SignupResponse response = userService.updateProfile(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "프로필 수정이 완료되었습니다."));
     }
 }

@@ -67,4 +67,13 @@ public class User {
         this.password = password;
         this.name = name;
     }
+
+    /**
+     * 사용자 이름 업데이트
+     * 
+     * @param name 암호화된 새로운 이름
+     */
+    public void updateName(String name) {
+        this.name = name;
+    }
 }

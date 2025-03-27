@@ -4,6 +4,7 @@ import com.example.budgettracker.domain.user.dto.LoginRequest;
 import com.example.budgettracker.domain.user.dto.LoginResponse;
 import com.example.budgettracker.domain.user.dto.SignupRequest;
 import com.example.budgettracker.domain.user.dto.SignupResponse;
+import com.example.budgettracker.domain.user.dto.UpdateProfileRequest;
 import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.repository.UserRepository;
 import com.example.budgettracker.global.exception.BusinessException;
@@ -86,6 +87,26 @@ public class UserService {
         // 사용자 찾기
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+
+        // 응답 생성
+        return SignupResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(aesUtil.decrypt(user.getName()))
+                .build();
+    }
+
+    @Transactional
+    public SignupResponse updateProfile(String userId, UpdateProfileRequest request) {
+        // 사용자 찾기
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+
+        // 이름 암호화
+        String encryptedName = aesUtil.encrypt(request.getName());
+        
+        // 사용자 정보 업데이트
+        user.updateName(encryptedName);
 
         // 응답 생성
         return SignupResponse.builder()
