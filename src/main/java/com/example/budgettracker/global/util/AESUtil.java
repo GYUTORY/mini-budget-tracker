@@ -17,7 +17,7 @@ public class AESUtil {
 
     private final SecretKeySpec secretKey;
 
-    public AESUtil(@Value("${aes.secret}") String secret) {
+    public AESUtil(@Value("${encryption.aes.key}") String secret) {
         byte[] key = secret.getBytes(StandardCharsets.UTF_8);
         this.secretKey = new SecretKeySpec(key, "AES");
     }

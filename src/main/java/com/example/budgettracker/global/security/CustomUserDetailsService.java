@@ -1,6 +1,6 @@
 package com.example.budgettracker.global.security;
 
-import com.example.budgettracker.domain.user.User;
+import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
