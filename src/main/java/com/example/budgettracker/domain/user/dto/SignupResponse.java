@@ -1,6 +1,6 @@
 package com.example.budgettracker.domain.user.dto;
 
-import com.example.budgettracker.domain.user.User;
+import com.example.budgettracker.domain.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

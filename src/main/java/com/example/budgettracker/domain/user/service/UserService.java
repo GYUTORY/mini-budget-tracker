@@ -1,6 +1,6 @@
 package com.example.budgettracker.domain.user.service;
 
-import com.example.budgettracker.domain.user.User;
+import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.dto.LoginRequest;
 import com.example.budgettracker.domain.user.dto.LoginResponse;
 import com.example.budgettracker.domain.user.dto.SignupRequest;
