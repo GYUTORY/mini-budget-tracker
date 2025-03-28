@@ -1,10 +1,10 @@
 package com.example.budgettracker.domain.transaction.service;
 
-import com.example.budgettracker.domain.transaction.Transaction;
+import com.example.budgettracker.domain.transaction.entity.Transaction;
 import com.example.budgettracker.domain.transaction.dto.TransactionRequest;
 import com.example.budgettracker.domain.transaction.dto.TransactionResponse;
 import com.example.budgettracker.domain.transaction.repository.TransactionRepository;
-import com.example.budgettracker.domain.user.User;
+import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.repository.UserRepository;
 import com.example.budgettracker.global.error.BusinessException;
 import com.example.budgettracker.global.error.ErrorCode;

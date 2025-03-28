@@ -1,7 +1,7 @@
 package com.example.budgettracker.domain.transaction.repository;
 
-import com.example.budgettracker.domain.transaction.Transaction;
-import com.example.budgettracker.domain.user.User;
+import com.example.budgettracker.domain.transaction.entity.Transaction;
+import com.example.budgettracker.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,8 +1,8 @@
 package com.example.budgettracker.domain.transaction.dto;
 
-import com.example.budgettracker.domain.transaction.Category;
-import com.example.budgettracker.domain.transaction.Transaction;
-import com.example.budgettracker.domain.transaction.TransactionType;
+import com.example.budgettracker.domain.transaction.entity.Category;
+import com.example.budgettracker.domain.transaction.entity.Transaction;
+import com.example.budgettracker.domain.transaction.entity.TransactionType;
 import lombok.Builder;
 import lombok.Getter;
 

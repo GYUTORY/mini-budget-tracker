@@ -1,7 +1,7 @@
 package com.example.budgettracker.domain.transaction.dto;
 
-import com.example.budgettracker.domain.transaction.Category;
-import com.example.budgettracker.domain.transaction.TransactionType;
+import com.example.budgettracker.domain.transaction.entity.Category;
+import com.example.budgettracker.domain.transaction.entity.TransactionType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
