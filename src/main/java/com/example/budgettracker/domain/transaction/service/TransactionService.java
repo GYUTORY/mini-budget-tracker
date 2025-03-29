@@ -1,13 +1,13 @@
 package com.example.budgettracker.domain.transaction.service;
 
-import com.example.budgettracker.domain.transaction.entity.Transaction;
 import com.example.budgettracker.domain.transaction.dto.TransactionRequest;
 import com.example.budgettracker.domain.transaction.dto.TransactionResponse;
+import com.example.budgettracker.domain.transaction.entity.Transaction;
 import com.example.budgettracker.domain.transaction.repository.TransactionRepository;
 import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.repository.UserRepository;
-import com.example.budgettracker.global.error.BusinessException;
-import com.example.budgettracker.global.error.ErrorCode;
+import com.example.budgettracker.global.exception.CustomException;
+import com.example.budgettracker.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,28 +25,61 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse createTransaction(String userId, TransactionRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Transaction transaction = Transaction.builder()
                 .user(user)
+                .amount(request.getAmount())
                 .type(request.getType())
                 .category(request.getCategory())
-                .amount(request.getAmount())
-                .transactionDate(request.getTransactionDate())
-                .memo(request.getMemo())
+                .description(request.getDescription())
+                .date(request.getDate())
                 .build();
 
-        transactionRepository.save(transaction);
+        transaction = transactionRepository.save(transaction);
         return TransactionResponse.from(transaction);
     }
 
     public List<TransactionResponse> getUserTransactions(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-        return transactionRepository.findByUserOrderByTransactionDateDesc(user).stream()
+        return transactionRepository.findByUserId(Long.parseLong(userId)).stream()
                 .map(TransactionResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    public TransactionResponse getTransaction(String userId, Long transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+        if (!transaction.getUser().getId().toString().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        return TransactionResponse.from(transaction);
+    }
+
+    @Transactional
+    public TransactionResponse updateTransaction(String userId, Long transactionId, TransactionRequest request) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+        if (!transaction.getUser().getId().toString().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        transaction.update(request);
+        return TransactionResponse.from(transaction);
+    }
+
+    @Transactional
+    public void deleteTransaction(String userId, Long transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+        if (!transaction.getUser().getId().toString().equals(userId)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        transactionRepository.delete(transaction);
     }
 } 
