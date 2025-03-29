@@ -2,12 +2,17 @@ package com.example.budgettracker.domain.auth.service;
 
 import com.example.budgettracker.domain.auth.dto.LoginRequest;
 import com.example.budgettracker.domain.auth.dto.LoginResponse;
+import com.example.budgettracker.domain.auth.dto.SignupRequest;
+import com.example.budgettracker.domain.auth.dto.SignupResponse;
 import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.repository.UserRepository;
 import com.example.budgettracker.global.exception.BusinessException;
 import com.example.budgettracker.global.util.AESUtil;
 import com.example.budgettracker.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +30,28 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화/검증을 위한 인코더
     private final JwtUtil jwtUtil; // JWT 토큰 생성 및 검증 유틸리티
     private final AESUtil aesUtil; // AES 암호화/복호화 유틸리티
+    private final AuthenticationManager authenticationManager;
+
+    @Transactional
+    public SignupResponse signup(SignupRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        User user = User.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .name(aesUtil.encrypt(request.getName()))
+                .build();
+
+        user = userRepository.save(user);
+
+        return SignupResponse.builder()
+                .email(user.getEmail())
+                .name(aesUtil.decrypt(user.getName()))
+                .message("회원가입이 완료되었습니다.")
+                .build();
+    }
 
     /**
      * 사용자 로그인을 처리하는 메서드
@@ -34,21 +61,15 @@ public class AuthService {
      * @throws BusinessException 이메일이 존재하지 않거나 비밀번호가 일치하지 않는 경우
      */
     public LoginResponse login(LoginRequest request) {
-        // 1. 이메일로 사용자 조회
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("이메일 또는 비밀번호가 일치하지 않습니다."));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
 
-        // 2. 비밀번호 검증
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BusinessException("이메일 또는 비밀번호가 일치하지 않습니다.");
-        }
+        String token = jwtUtil.generateToken(authentication.getName());
 
-        // 3. JWT 토큰 생성
-        String token = jwtUtil.generateToken(user.getId());
-        
-        // 4. 로그인 응답 생성 및 반환
         return LoginResponse.builder()
                 .token(token)
+                .message("로그인이 완료되었습니다.")
                 .build();
     }
 } 

@@ -10,7 +10,7 @@ import java.util.Optional;
  * 사용자 엔티티(User)에 대한 DB 접근을 담당하는 리포지토리 인터페이스
  */
 @Repository // Spring이 이 인터페이스를 Bean으로 인식하도록 명시 (사실 생략해도 됨)
-public interface UserRepository extends JpaRepository<User, String> {
+public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * 이메일을 기준으로 사용자 조회
      * @param email - 사용자 이메일

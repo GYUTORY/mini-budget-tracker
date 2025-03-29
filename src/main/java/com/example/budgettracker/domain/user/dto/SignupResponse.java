@@ -15,15 +15,17 @@ import lombok.NoArgsConstructor;
 @Builder // Lombok: Builder 패턴으로 객체 생성 가능하게 함
 public class SignupResponse {
 
-    private String id;        // 생성된 사용자의 고유 ID
+    private Long id;        // 생성된 사용자의 고유 ID
     private String email;   // 사용자의 이메일 (중복 확인된 값)
     private String name;    // 사용자의 이름
+    private String message;
 
-    public static SignupResponse from(User user) {
+    public static SignupResponse of(User user, String message) {
         return SignupResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
+                .message(message)
                 .build();
     }
 }

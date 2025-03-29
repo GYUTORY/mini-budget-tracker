@@ -7,9 +7,15 @@ import com.example.budgettracker.domain.user.dto.SignupResponse;
 import com.example.budgettracker.domain.user.dto.UpdateProfileRequest;
 import com.example.budgettracker.domain.user.service.UserService;
 import com.example.budgettracker.global.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +26,7 @@ import java.util.Map;
 /**
  * 사용자 인증 관련 API를 제공하는 컨트롤러
  */
+@Tag(name = "사용자", description = "사용자 관련 API")
 @RestController // 이 클래스가 REST API 컨트롤러임을 명시 (JSON 반환)
 @RequestMapping("/api/users") // 이 컨트롤러의 공통 URL Prefix 지정
 @RequiredArgsConstructor // Lombok: final 필드를 자동으로 생성자 주입
@@ -27,40 +34,53 @@ public class UserController {
 
     private final UserService userService; // 회원가입 로직을 처리할 서비스 클래스 주입
 
+    @Operation(summary = "이메일 중복 확인", description = "회원가입 시 이메일 중복 여부를 확인합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이메일 중복 확인 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청")
+    })
     @PostMapping("/check-email")
-    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(
+            @Parameter(description = "이메일 정보", required = true)
+            @RequestBody Map<String, String> request) {
         String email = request.get("email");
         boolean isAvailable = !userService.existsByEmail(email);
         String message = isAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
         return ResponseEntity.ok(ApiResponse.success(isAvailable, message));
     }
 
-    /**
-     * 회원가입 API
-     * POST /api/users/signup
-     *
-     * @param request 클라이언트가 보낸 회원가입 요청 DTO
-     * @return 회원가입 결과 DTO와 201(CREATED) 상태 코드
-     */
+    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원가입 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일 중복")
+    })
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<SignupResponse>> signup(@Valid @RequestBody SignupRequest request) {
-        SignupResponse response = userService.signup(request);
-        return ResponseEntity.ok(ApiResponse.success(response, "회원가입이 완료되었습니다."));
+    public ResponseEntity<SignupResponse> signup(
+            @Parameter(description = "회원가입 정보", required = true)
+            @Valid @RequestBody SignupRequest request) {
+        return ResponseEntity.ok(userService.signup(request));
     }
 
-    /**
-     * 로그인 API
-     * POST /api/auth/login
-     *
-     * @param request 로그인 요청 정보
-     * @return 로그인 결과
-     */
+    @Operation(summary = "로그인", description = "사용자 인증을 수행하고 JWT 토큰을 발급합니다.")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패")
+    })
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
-        LoginResponse response = userService.login(request);
-        return ResponseEntity.ok(ApiResponse.success(response, "로그인이 완료되었습니다."));
+    public ResponseEntity<LoginResponse> login(
+            @Parameter(description = "로그인 정보", required = true)
+            @Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
     }
 
+    @Operation(summary = "로그아웃", description = "현재 사용자의 로그아웃을 처리합니다.")
+    @SecurityRequirement(name = "bearer-key")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
         // 현재 인증된 사용자의 토큰을 무효화
@@ -69,31 +89,54 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success(null, "로그아웃이 완료되었습니다."));
     }
 
-    /**
-     * 마이페이지 조회 API
-     * GET /api/users/me
-     *
-     * @return 사용자 정보
-     */
+    @Operation(summary = "프로필 조회", description = "현재 로그인한 사용자의 프로필 정보를 조회합니다.")
+    @SecurityRequirement(name = "bearer-key")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "프로필 조회 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<SignupResponse>> getMyPage() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userId = auth.getName();
-        SignupResponse response = userService.getUserInfo(userId);
-        return ResponseEntity.ok(ApiResponse.success(response, "마이페이지 조회가 완료되었습니다."));
+    public ResponseEntity<SignupResponse> getProfile(
+            @Parameter(hidden = true)
+            Authentication authentication) {
+        String userId = authentication.getName();
+        return ResponseEntity.ok(userService.getProfile(userId));
     }
 
-    /**
-     * 프로필 수정 API
-     * PUT /api/auth/profile
-     * 
-     * @param request 프로필 수정 요청 정보
-     * @return 수정된 사용자 정보
-     */
+    @Operation(summary = "프로필 수정", description = "현재 로그인한 사용자의 프로필 정보를 수정합니다.")
+    @SecurityRequirement(name = "bearer-key")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "프로필 수정 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
     @PutMapping("/profile")
-    public ResponseEntity<ApiResponse<SignupResponse>> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<ApiResponse<SignupResponse>> updateProfile(
+            @Parameter(description = "수정할 프로필 정보", required = true)
+            @Valid @RequestBody UpdateProfileRequest request) {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         SignupResponse response = userService.updateProfile(userId, request);
         return ResponseEntity.ok(ApiResponse.success(response, "프로필 수정이 완료되었습니다."));
+    }
+
+    @Operation(summary = "사용자 정보 수정", description = "현재 로그인한 사용자의 정보를 수정합니다.")
+    @SecurityRequirement(name = "bearer-key")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용자 정보 수정 성공"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    @PutMapping("/me")
+    public ResponseEntity<Void> updateUserInfo(
+            @Parameter(hidden = true)
+            Authentication authentication,
+            @Parameter(description = "수정할 사용자 정보", required = true)
+            @Valid @RequestBody SignupRequest request) {
+        String userId = authentication.getName();
+        userService.updateUserInfo(userId, request);
+        return ResponseEntity.ok().build();
     }
 }

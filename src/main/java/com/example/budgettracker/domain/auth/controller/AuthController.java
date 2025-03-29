@@ -2,34 +2,62 @@ package com.example.budgettracker.domain.auth.controller;
 
 import com.example.budgettracker.domain.auth.dto.LoginRequest;
 import com.example.budgettracker.domain.auth.dto.LoginResponse;
+import com.example.budgettracker.domain.auth.dto.SignupRequest;
+import com.example.budgettracker.domain.auth.dto.SignupResponse;
 import com.example.budgettracker.domain.auth.service.AuthService;
-import com.example.budgettracker.global.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
- * 인증 관련 요청을 처리하는 컨트롤러
- * 로그인, 로그아웃 등의 인증 관련 API를 제공합니다.
+ * 인증 관련 API 컨트롤러
+ * 
+ * @Tag: Swagger 문서에서 API 그룹을 나타냄
+ * @RestController: REST API 컨트롤러임을 나타냄
+ * @RequestMapping: 기본 URL 경로 설정
+ * @RequiredArgsConstructor: final 필드에 대한 생성자 자동 생성
  */
-@RestController // JSON 형태로 응답을 반환하는 REST 컨트롤러임을 명시
-@RequestMapping("/api/auth") // 기본 URL 경로 설정
-@RequiredArgsConstructor // final 필드에 대한 생성자 자동 생성
+@Tag(name = "인증", description = "인증 관련 API")
+@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService; // 인증 관련 비즈니스 로직을 처리하는 서비스
+    private final AuthService authService;
 
     /**
-     * 사용자 로그인을 처리하는 엔드포인트
+     * 회원가입 API
      * 
-     * @param request 로그인 요청 정보 (이메일, 비밀번호)
-     * @return 로그인 성공 시 JWT 토큰을 포함한 응답
+     * @Operation: API 엔드포인트 설명
+     * @Parameter: API 파라미터 설명
+     * @param request 회원가입 요청 데이터
+     * @return 회원가입 응답 데이터
      */
-    @PostMapping("/login") // POST /api/auth/login
-    public ApiResponse<LoginResponse> login(@RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
-        return ApiResponse.success(response, "로그인이 완료되었습니다.");
+    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
+    @PostMapping("/signup")
+    public ResponseEntity<SignupResponse> signup(
+            @Parameter(description = "회원가입 정보", required = true)
+            @Valid @RequestBody SignupRequest request) {
+        return ResponseEntity.ok(authService.signup(request));
+    }
+
+    /**
+     * 로그인 API
+     * 
+     * @Operation: API 엔드포인트 설명
+     * @Parameter: API 파라미터 설명
+     * @param request 로그인 요청 데이터
+     * @return 로그인 응답 데이터
+     */
+    @Operation(summary = "로그인", description = "사용자 인증 및 JWT 토큰 발급")
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Parameter(description = "로그인 정보", required = true)
+            @Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 } 

@@ -7,8 +7,8 @@ import com.example.budgettracker.domain.user.dto.SignupRequest;
 import com.example.budgettracker.domain.user.dto.SignupResponse;
 import com.example.budgettracker.domain.user.dto.UpdateProfileRequest;
 import com.example.budgettracker.domain.user.repository.UserRepository;
-import com.example.budgettracker.global.error.BusinessException;
-import com.example.budgettracker.global.error.ErrorCode;
+import com.example.budgettracker.global.exception.CustomException;
+import com.example.budgettracker.global.exception.ErrorCode;
 import com.example.budgettracker.global.util.AESUtil;
 import com.example.budgettracker.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +29,10 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
+    @Transactional
     public SignupResponse signup(SignupRequest request) {
-        if (existsByEmail(request.getEmail())) {
-            throw new BusinessException(ErrorCode.USER_ALREADY_EXISTS);
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         User user = User.builder()
@@ -40,21 +41,22 @@ public class UserService {
                 .name(aesUtil.encrypt(request.getName()))
                 .build();
 
-        userRepository.save(user);
-        return SignupResponse.from(user);
+        user = userRepository.save(user);
+        return SignupResponse.of(user, "회원가입이 완료되었습니다.");
     }
 
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
-        String token = jwtUtil.generateToken(user.getId());
+        String token = jwtUtil.generateToken(user.getEmail());
         return LoginResponse.builder()
                 .token(token)
+                .message("로그인이 완료되었습니다.")
                 .build();
     }
 
@@ -64,8 +66,8 @@ public class UserService {
 
     @Transactional
     public SignupResponse updateProfile(String userId, UpdateProfileRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         if (request.getName() != null) {
             user.updateName(aesUtil.encrypt(request.getName()));
@@ -75,12 +77,26 @@ public class UserService {
             user.updatePassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        return SignupResponse.from(user);
+        return SignupResponse.of(user, "프로필이 수정되었습니다.");
     }
 
-    public SignupResponse getUserInfo(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        return SignupResponse.from(user);
+    @Transactional
+    public void updateUserInfo(String userId, SignupRequest request) {
+        User user = userRepository.findByEmail(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (request.getName() != null) {
+            user.updateName(aesUtil.encrypt(request.getName()));
+        }
+
+        if (request.getPassword() != null) {
+            user.updatePassword(passwordEncoder.encode(request.getPassword()));
+        }
+    }
+
+    public SignupResponse getProfile(String userId) {
+        User user = userRepository.findByEmail(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return SignupResponse.of(user, "프로필 조회가 완료되었습니다.");
     }
 }
