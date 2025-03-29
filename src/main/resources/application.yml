@@ -1,7 +1,7 @@
 spring:
   datasource:
     # MySQL 데이터베이스 연결 설정
-    url: jdbc:mysql://localhost:3306/budget_tracker?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/budget_tracker?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -14,8 +14,9 @@ spring:
     properties:
       hibernate:
         format_sql: true  # SQL 쿼리 포맷팅
-        dialect: org.hibernate.dialect.MySQLDialect  # MySQL 방언 설정
-    database-platform: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MySQL8Dialect  # MySQL 방언 설정
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
 
 server:
   port: 8080  # 서버 포트 설정
@@ -38,9 +39,9 @@ logging:
     # 애플리케이션 관련 로그 레벨 설정
     com.example.budgettracker: DEBUG
     # Spring Security 관련 로그 레벨
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO
     # Spring Web 관련 로그 레벨
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
     # Hibernate 관련 로그 레벨
     org.hibernate: INFO
     # SQL 쿼리 로그 레벨
@@ -52,3 +53,17 @@ h2:
   console:
     enabled: true
     path: /h2-console 
+
+# Swagger 설정
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  show-actuator: true
+  packages-to-scan: com.example.budgettracker
+  paths-to-match: /api/** 

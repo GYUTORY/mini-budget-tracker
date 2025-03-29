@@ -9,64 +9,60 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
- * AES 암호화/복호화를 처리하는 유틸리티 클래스
- * Spring의 @Component 어노테이션을 통해 싱글톤으로 관리됨
+ * AES 암호화/복호화를 위한 유틸리티 클래스
+ * 
+ * @Component: Spring 컴포넌트로 등록
  */
 @Component
 public class AESUtil {
 
     private final SecretKeySpec secretKey;
+    private static final String ALGORITHM = "AES";
 
+    /**
+     * AESUtil 생성자
+     * 
+     * @param secret 암호화 키
+     */
     public AESUtil(@Value("${encryption.aes.key}") String secret) {
+        // 암호화 키를 16바이트로 맞추기 위해 패딩
         byte[] key = secret.getBytes(StandardCharsets.UTF_8);
-        this.secretKey = new SecretKeySpec(key, "AES");
+        byte[] paddedKey = new byte[16];
+        System.arraycopy(key, 0, paddedKey, 0, Math.min(key.length, paddedKey.length));
+        this.secretKey = new SecretKeySpec(paddedKey, ALGORITHM);
     }
 
     /**
-     * AES 암호화 메서드
+     * 문자열을 AES로 암호화
      * 
-     * @param value 암호화할 원본 문자열
-     * @return Base64로 인코딩된 암호화 문자열
-     * 
-     * 암호화 과정:
-     * 1. SecretKeySpec을 생성하여 AES 알고리즘에 사용할 키를 준비
-     * 2. Cipher 인스턴스를 생성하고 AES/ECB/PKCS5Padding 모드로 초기화
-     * 3. 암호화 모드로 설정하고 키를 적용
-     * 4. 입력 문자열을 바이트 배열로 변환하여 암호화
-     * 5. 암호화된 바이트 배열을 Base64로 인코딩하여 문자열로 반환
+     * @param data 암호화할 문자열
+     * @return 암호화된 문자열 (Base64 인코딩)
      */
-    public String encrypt(String value) {
+    public String encrypt(String data) {
         try {
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] encryptedBytes = cipher.doFinal(value.getBytes());
+            byte[] encryptedBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to encrypt value", e);
+            throw new RuntimeException("암호화 중 오류가 발생했습니다.", e);
         }
     }
 
     /**
-     * AES 복호화 메서드
+     * 암호화된 문자열을 AES로 복호화
      * 
-     * @param encrypted Base64로 인코딩된 암호화 문자열
-     * @return 복호화된 원본 문자열
-     * 
-     * 복호화 과정:
-     * 1. SecretKeySpec을 생성하여 AES 알고리즘에 사용할 키를 준비
-     * 2. Cipher 인스턴스를 생성하고 AES/ECB/PKCS5Padding 모드로 초기화
-     * 3. 복호화 모드로 설정하고 키를 적용
-     * 4. Base64로 인코딩된 문자열을 디코딩하여 바이트 배열로 변환
-     * 5. 암호화된 바이트 배열을 복호화하여 원본 문자열로 반환
+     * @param encryptedData 암호화된 문자열 (Base64 인코딩)
+     * @return 복호화된 문자열
      */
-    public String decrypt(String encryptedValue) {
+    public String decrypt(String encryptedData) {
         try {
-            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedValue));
-            return new String(decryptedBytes);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to decrypt value", e);
+            throw new RuntimeException("복호화 중 오류가 발생했습니다.", e);
         }
     }
 } 
