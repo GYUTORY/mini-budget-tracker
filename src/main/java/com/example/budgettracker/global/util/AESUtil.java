@@ -1,6 +1,5 @@
 package com.example.budgettracker.global.util;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -17,32 +16,27 @@ import java.util.Base64;
 public class AESUtil {
 
     private final SecretKeySpec secretKey;
-    private static final String ALGORITHM = "AES";
 
     /**
      * AESUtil 생성자
      * 
      * @param secret 암호화 키
      */
-    public AESUtil(@Value("${encryption.aes.key}") String secret) {
-        // 암호화 키를 16바이트로 맞추기 위해 패딩
-        byte[] key = secret.getBytes(StandardCharsets.UTF_8);
-        byte[] paddedKey = new byte[16];
-        System.arraycopy(key, 0, paddedKey, 0, Math.min(key.length, paddedKey.length));
-        this.secretKey = new SecretKeySpec(paddedKey, ALGORITHM);
+    public AESUtil(String secret) {
+        this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "AES");
     }
 
     /**
      * 문자열을 AES로 암호화
      * 
-     * @param data 암호화할 문자열
+     * @param value 암호화할 문자열
      * @return 암호화된 문자열 (Base64 인코딩)
      */
-    public String encrypt(String data) {
+    public String encrypt(String value) {
         try {
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] encryptedBytes = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            byte[] encryptedBytes = cipher.doFinal(value.getBytes());
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
             throw new RuntimeException("암호화 중 오류가 발생했습니다.", e);
@@ -52,15 +46,15 @@ public class AESUtil {
     /**
      * 암호화된 문자열을 AES로 복호화
      * 
-     * @param encryptedData 암호화된 문자열 (Base64 인코딩)
+     * @param encrypted 암호화된 문자열 (Base64 인코딩)
      * @return 복호화된 문자열
      */
-    public String decrypt(String encryptedData) {
+    public String decrypt(String encrypted) {
         try {
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
-            return new String(decryptedBytes, StandardCharsets.UTF_8);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+            return new String(decryptedBytes);
         } catch (Exception e) {
             throw new RuntimeException("복호화 중 오류가 발생했습니다.", e);
         }

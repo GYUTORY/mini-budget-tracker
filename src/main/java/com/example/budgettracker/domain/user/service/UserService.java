@@ -30,19 +30,21 @@ public class UserService {
     }
 
     @Transactional
-    public SignupResponse signup(SignupRequest request) {
+    public User signup(SignupRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
+
+        String encryptedName = aesUtil.encrypt(request.getName());
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .name(aesUtil.encrypt(request.getName()))
+                .password(encodedPassword)
+                .name(encryptedName)
                 .build();
 
-        user = userRepository.save(user);
-        return SignupResponse.of(user, "회원가입이 완료되었습니다.");
+        return userRepository.save(user);
     }
 
     public LoginResponse login(LoginRequest request) {
@@ -94,9 +96,9 @@ public class UserService {
         }
     }
 
-    public SignupResponse getProfile(String userId) {
-        User user = userRepository.findByEmail(userId)
+    @Transactional(readOnly = true)
+    public User getProfile(String userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        return SignupResponse.of(user, "프로필 조회가 완료되었습니다.");
     }
 }

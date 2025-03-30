@@ -4,14 +4,18 @@ import com.example.budgettracker.domain.transaction.entity.Category;
 import com.example.budgettracker.domain.transaction.entity.Transaction;
 import com.example.budgettracker.domain.transaction.entity.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "거래 내역 응답")
 public class TransactionResponse {
 

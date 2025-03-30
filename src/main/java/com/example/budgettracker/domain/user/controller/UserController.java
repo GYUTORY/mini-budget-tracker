@@ -5,6 +5,7 @@ import com.example.budgettracker.domain.user.dto.LoginResponse;
 import com.example.budgettracker.domain.user.dto.SignupRequest;
 import com.example.budgettracker.domain.user.dto.SignupResponse;
 import com.example.budgettracker.domain.user.dto.UpdateProfileRequest;
+import com.example.budgettracker.domain.user.entity.User;
 import com.example.budgettracker.domain.user.service.UserService;
 import com.example.budgettracker.global.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,16 +20,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 사용자 인증 관련 API를 제공하는 컨트롤러
  */
 @Tag(name = "사용자", description = "사용자 관련 API")
 @RestController // 이 클래스가 REST API 컨트롤러임을 명시 (JSON 반환)
-@RequestMapping("/api/users") // 이 컨트롤러의 공통 URL Prefix 지정
+@RequestMapping("/api/v1/users") // 이 컨트롤러의 공통 URL Prefix 지정
 @RequiredArgsConstructor // Lombok: final 필드를 자동으로 생성자 주입
 public class UserController {
 
@@ -56,10 +60,13 @@ public class UserController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일 중복")
     })
     @PostMapping("/signup")
-    public ResponseEntity<SignupResponse> signup(
-            @Parameter(description = "회원가입 정보", required = true)
-            @Valid @RequestBody SignupRequest request) {
-        return ResponseEntity.ok(userService.signup(request));
+    public ResponseEntity<Map<String, Object>> signup(@Valid @RequestBody SignupRequest request) {
+        User user = userService.signup(request);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("email", user.getEmail());
+        response.put("name", user.getName());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "로그인", description = "사용자 인증을 수행하고 JWT 토큰을 발급합니다.")
@@ -97,11 +104,13 @@ public class UserController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
     @GetMapping("/me")
-    public ResponseEntity<SignupResponse> getProfile(
-            @Parameter(hidden = true)
-            Authentication authentication) {
-        String userId = authentication.getName();
-        return ResponseEntity.ok(userService.getProfile(userId));
+    public ResponseEntity<Map<String, Object>> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.getProfile(userDetails.getUsername());
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("email", user.getEmail());
+        response.put("name", user.getName());
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "프로필 수정", description = "현재 로그인한 사용자의 프로필 정보를 수정합니다.")

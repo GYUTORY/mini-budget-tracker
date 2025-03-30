@@ -25,7 +25,7 @@ public class TransactionService {
 
     @Transactional
     public TransactionResponse createTransaction(String userId, TransactionRequest request) {
-        User user = userRepository.findById(Long.parseLong(userId))
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Transaction transaction = Transaction.builder()

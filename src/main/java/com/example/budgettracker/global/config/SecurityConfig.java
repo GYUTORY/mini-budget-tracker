@@ -1,7 +1,7 @@
 package com.example.budgettracker.global.config;
 
 import com.example.budgettracker.global.security.CustomUserDetailsService;
-import com.example.budgettracker.global.config.JwtAuthenticationFilter;
+import com.example.budgettracker.global.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +45,7 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)  // CSRF 보호 비활성화 (JWT 사용)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/users/signup", "/api/users/login", "/api/users/check-email").permitAll()
+                .requestMatchers("/api/v1/users/signup", "/api/v1/users/login", "/api/v1/users/check-email").permitAll()
                 .requestMatchers(
                     "/swagger-ui/**",
                     "/swagger-ui.html",

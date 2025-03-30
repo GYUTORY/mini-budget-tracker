@@ -99,7 +99,7 @@ public class CategoryService {
     @Transactional
     public CategoryResponse createCategory(String userId, CategoryRequest request) {
         // 사용자 존재 여부 확인
-        if (!userRepository.existsById(Long.parseLong(userId))) {
+        if (!userRepository.existsById(userId)) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
         

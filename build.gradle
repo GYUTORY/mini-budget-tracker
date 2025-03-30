@@ -12,7 +12,8 @@ version = '0.0.1-SNAPSHOT'
 
 // 자바 버전 설정 (Java 17 사용)
 java {
-    sourceCompatibility = '17'
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 // 컴파일 전용 설정: annotationProcessor가 compileOnly에도 포함되도록 설정
@@ -78,4 +79,12 @@ dependencies {
 // 테스트 실행 시 JUnit Platform 사용 설정 (JUnit 5 기반)
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    options.encoding = 'UTF-8'
 }

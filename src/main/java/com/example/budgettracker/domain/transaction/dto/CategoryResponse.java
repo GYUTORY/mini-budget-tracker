@@ -2,14 +2,15 @@ package com.example.budgettracker.domain.transaction.dto;
 
 import com.example.budgettracker.domain.transaction.entity.Category;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-/**
- * 카테고리 응답 DTO
- */
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "카테고리 응답")
 public class CategoryResponse {
 
@@ -28,15 +29,9 @@ public class CategoryResponse {
     @Schema(description = "카테고리 색상", example = "#FF5733")
     private String color;
 
-    @Schema(description = "기본 카테고리 여부", example = "true")
-    private Boolean isDefault;
+    @Schema(description = "사용자 ID", example = "1")
+    private Long userId;
 
-    /**
-     * 카테고리 엔티티를 응답 DTO로 변환
-     * 
-     * @param category 카테고리 엔티티
-     * @return 카테고리 응답 DTO
-     */
     public static CategoryResponse from(Category category) {
         return CategoryResponse.builder()
                 .id(category.getId())
@@ -44,7 +39,7 @@ public class CategoryResponse {
                 .description(category.getDescription())
                 .icon(category.getIcon())
                 .color(category.getColor())
-                .isDefault(category.getIsDefault())
+                .userId(category.getUserId())
                 .build();
     }
 } 

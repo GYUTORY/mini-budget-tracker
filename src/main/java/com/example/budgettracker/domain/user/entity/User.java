@@ -4,6 +4,7 @@ import com.example.budgettracker.domain.transaction.entity.Transaction;
 import com.example.budgettracker.global.util.AESUtil;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +29,7 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User {
 
@@ -39,8 +41,8 @@ public class User {
      * @Column: 컬럼 정보 설정
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     /**
      * 사용자 이메일
