@@ -10,10 +10,10 @@ plugins {
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
-// 자바 버전 설정 (Java 17 사용)
+// 자바 버전 설정 (Java 21 사용)
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 // 컴파일 전용 설정: annotationProcessor가 compileOnly에도 포함되도록 설정
@@ -30,7 +30,7 @@ repositories {
 
 // 버전 변수 선언: 한 곳에서 관리 가능하도록
 ext {
-    spockVersion = '2.3-groovy-4.0'  // Spock (Java 17 호환 버전)
+    spockVersion = '2.4-M1-groovy-4.0'  // Spock (Java 17 호환 버전)
     testcontainersVersion = '1.19.7'  // Testcontainers 최신 버전
     springSecurityVersion = '6.2.2'  // Spring Security 버전
 }
@@ -54,6 +54,13 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     // ✅ 테스트 의존성 (Groovy + Spock + Testcontainers + Spring Boot Test)
+
+    // Groovy
+    testImplementation 'org.apache.groovy:groovy:4.0.15'
+    testImplementation 'org.apache.groovy:groovy-json:4.0.15'
+    testImplementation 'org.apache.groovy:groovy-nio:4.0.15'
+    testImplementation 'org.apache.groovy:groovy-templates:4.0.15'
+    testImplementation 'org.apache.groovy:groovy-test:4.0.15'
 
     // Spock 프레임워크 (테스트 작성용)
     testImplementation "org.spockframework:spock-core:${spockVersion}"  // Spock 기본 기능
@@ -81,10 +88,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(GroovyCompile) {
+tasks.withType(GroovyCompile).configureEach {
     options.encoding = 'UTF-8'
+    groovyOptions.configurationScript = file('config.groovy')
+    groovyOptions.optimizationOptions.indy = true
 }
