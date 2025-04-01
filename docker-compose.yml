@@ -1,16 +1,65 @@
+# Docker Compose 파일 버전 지정 (3.8은 최신 안정 버전)
 version: '3.8'
 
+# 실행할 서비스(컨테이너) 정의
 services:
+  # MySQL 서비스 정의
   mysql:
+    # 사용할 MySQL 도커 이미지와 버전 지정
     image: mysql:8.0
+    # 컨테이너 이름 지정 (없으면 자동 생성됨)
     container_name: budget-tracker-mysql
+    # MySQL 서버 환경 변수 설정
     environment:
+      # root 계정의 비밀번호 설정
       MYSQL_ROOT_PASSWORD: root
+      # 자동으로 생성할 데이터베이스 이름
       MYSQL_DATABASE: budget_tracker
+    # 포트 포워딩 설정 (호스트:컨테이너)
+    # 호스트의 3306 포트를 컨테이너의 3306 포트와 연결
     ports:
       - "3306:3306"
+    # 데이터 영속성을 위한 볼륨 설정
+    # mysql-data라는 named volume을 컨테이너의 /var/lib/mysql 경로에 마운트
     volumes:
       - mysql-data:/var/lib/mysql
 
+  # MongoDB 서비스 정의
+  mongodb:
+    # 최신 MongoDB 도커 이미지 사용
+    image: mongo:latest
+    # MongoDB 컨테이너 이름 지정
+    container_name: budget-tracker-mongodb
+    # MongoDB 서버 환경 변수 설정
+    environment:
+      # MongoDB 관리자(root) 계정 설정
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+    # 포트 포워딩 설정 (호스트:컨테이너)
+    # 호스트의 27017 포트를 컨테이너의 27017 포트와 연결
+    ports:
+      - "27017:27017"
+    # 데이터 영속성을 위한 볼륨 설정
+    # mongodb-data라는 named volume을 컨테이너의 /data/db 경로에 마운트
+    volumes:
+      - mongodb-data:/data/db
+    # 컨테이너 헬스체크 설정
+    healthcheck:
+      # MongoDB 서버 상태 확인을 위한 명령어
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      # 헬스체크 주기 (10초마다)
+      interval: 10s
+      # 헬스체크 타임아웃 시간
+      timeout: 10s
+      # 실패 시 재시도 횟수
+      retries: 5
+
+# Docker volume 정의
+# 컨테이너가 삭제되어도 데이터를 보존하기 위한 영구 저장소
 volumes:
-  mysql-data: 
+  # MySQL 데이터를 저장할 named volume
+  # Docker가 자동으로 볼륨을 생성하고 관리
+  mysql-data:
+  # MongoDB 데이터를 저장할 named volume
+  # Docker가 자동으로 볼륨을 생성하고 관리
+  mongodb-data: 

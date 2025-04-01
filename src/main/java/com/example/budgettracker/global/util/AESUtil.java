@@ -1,5 +1,6 @@
 package com.example.budgettracker.global.util;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -22,7 +23,7 @@ public class AESUtil {
      * 
      * @param secret 암호화 키
      */
-    public AESUtil(String secret) {
+    public AESUtil(@Value("${encryption.aes.key}") String secret) {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "AES");
     }
 
