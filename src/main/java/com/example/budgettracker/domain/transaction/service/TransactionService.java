@@ -42,7 +42,7 @@ public class TransactionService {
     }
 
     public List<TransactionResponse> getUserTransactions(String userId) {
-        return transactionRepository.findByUserId(Long.parseLong(userId)).stream()
+        return transactionRepository.findByUserId(userId).stream()
                 .map(TransactionResponse::from)
                 .collect(Collectors.toList());
     }
