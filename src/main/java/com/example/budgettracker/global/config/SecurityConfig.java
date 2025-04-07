@@ -45,7 +45,8 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)  // CSRF 보호 비활성화 (JWT 사용)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
+                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+                .requestMatchers("/api/user/check-email").permitAll()
                 .requestMatchers(
                     "/swagger-ui/**",
                     "/swagger-ui.html",

@@ -32,7 +32,7 @@ import java.util.HashMap;
  */
 @Tag(name = "사용자", description = "사용자 관련 API")
 @RestController // 이 클래스가 REST API 컨트롤러임을 명시 (JSON 반환)
-@RequestMapping("/api/v1/users") // 이 컨트롤러의 공통 URL Prefix 지정
+@RequestMapping("/api/user") // 이 컨트롤러의 공통 URL Prefix 지정
 @RequiredArgsConstructor // Lombok: final 필드를 자동으로 생성자 주입
 public class UserController {
 
@@ -51,35 +51,6 @@ public class UserController {
         boolean isAvailable = !userService.existsByEmail(email);
         String message = isAvailable ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.";
         return ResponseEntity.ok(ApiResponse.success(isAvailable, message));
-    }
-
-    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
-    @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원가입 성공"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이메일 중복")
-    })
-    @PostMapping("/signup")
-    public ResponseEntity<Map<String, Object>> signup(@Valid @RequestBody SignupRequest request) {
-        User user = userService.signup(request);
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("email", user.getEmail());
-        response.put("name", user.getName());
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "로그인", description = "사용자 인증을 수행하고 JWT 토큰을 발급합니다.")
-    @ApiResponses(value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인 성공"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패")
-    })
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
-            @Parameter(description = "로그인 정보", required = true)
-            @Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(userService.login(request));
     }
 
     @Operation(summary = "로그아웃", description = "현재 사용자의 로그아웃을 처리합니다.")

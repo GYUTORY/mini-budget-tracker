@@ -1,10 +1,10 @@
 package com.example.budgettracker.domain.auth.controller;
 
-import com.example.budgettracker.domain.auth.dto.LoginRequest;
-import com.example.budgettracker.domain.auth.dto.LoginResponse;
-import com.example.budgettracker.domain.auth.dto.SignupRequest;
-import com.example.budgettracker.domain.auth.dto.SignupResponse;
-import com.example.budgettracker.domain.auth.service.AuthService;
+import com.example.budgettracker.domain.user.dto.LoginRequest;
+import com.example.budgettracker.domain.user.dto.LoginResponse;
+import com.example.budgettracker.domain.user.dto.SignupRequest;
+import com.example.budgettracker.domain.user.entity.User;
+import com.example.budgettracker.domain.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +12,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 인증 관련 API 컨트롤러
@@ -23,11 +26,11 @@ import org.springframework.web.bind.annotation.*;
  */
 @Tag(name = "인증", description = "인증 관련 API")
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final UserService userService;
 
     /**
      * 회원가입 API
@@ -39,10 +42,13 @@ public class AuthController {
      */
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @PostMapping("/signup")
-    public ResponseEntity<SignupResponse> signup(
-            @Parameter(description = "회원가입 정보", required = true)
-            @Valid @RequestBody SignupRequest request) {
-        return ResponseEntity.ok(authService.signup(request));
+    public ResponseEntity<Map<String, Object>> signup(@Valid @RequestBody SignupRequest request) {
+        User user = userService.signup(request);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("email", user.getEmail());
+        response.put("name", user.getName());
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -53,11 +59,11 @@ public class AuthController {
      * @param request 로그인 요청 데이터
      * @return 로그인 응답 데이터
      */
-    @Operation(summary = "로그인", description = "사용자 인증 및 JWT 토큰 발급")
+    @Operation(summary = "로그인", description = "사용자 인증을 수행하고 JWT 토큰을 발급합니다.")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Parameter(description = "로그인 정보", required = true)
             @Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+        return ResponseEntity.ok(userService.login(request));
     }
 } 
