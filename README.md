@@ -5,88 +5,109 @@
 ## 기술 스택
 
 - Java 21
-- Spring Boot 3.2.3
+- Spring Boot 3.2
 - Spring Security
-- JWT
-- MySQL
-- Gradle 8.5
-- Spock Framework (테스트)
+- MySQL 8.0
+- MongoDB
+- Redis
+- Docker & Docker Compose
 
 ## 기능 명세
- 
- ### 1. 사용자 관리
- 
- - **회원가입**: 이메일, 비밀번호를 이용한 회원가입
- - **로그인/로그아웃**: 세션 기반 인증
- - **사용자 프로필 관리**: 기본 정보 수정
- 
- ### 2. 사용자 인증
- 
- - **JWT 기반 인증**: 로그인 성공 시 JWT 토큰 발급
- - **토큰 관리**: Access Token과 Refresh Token을 통한 인증 유지
- - **권한 관리**: 사용자 역할(Role)에 따른 기능 접근 제어
- - **소셜 로그인**: Google, Kakao 등 OAuth2 기반 소셜 로그인 지원
- 
- ### 3. 거래 관리
- 
- - **거래 등록**: 수입/지출 내역 추가
-   - 금액, 날짜, 카테고리, 메모, 거래 유형(수입/지출)
- - **거래 수정**: 등록된 거래 내역 수정
- - **거래 삭제**: 등록된 거래 내역 삭제
- - **거래 내역 조회**: 날짜별, 카테고리별, 거래 유형별로 필터링
- 
- ### 4. 카테고리 관리
- 
- - **기본 카테고리**: 식비, 교통비, 주거비, 쇼핑, 문화생활, 월급, 용돈 등
- - **사용자 정의 카테고리**: 사용자가 직접 카테고리 추가/수정/삭제
- 
- ### 5. 통계 및 분석
- 
- - **월별 요약**: 월간 총 수입/지출 및 잔액 표시
- - **카테고리별 분석**: 카테고리별 지출 비율 (파이 차트)
- - **기간별 추이**: 주간/월간/연간 소비 패턴 분석 (라인 차트)
- - **예산 대비 지출**: 설정한 예산 대비 실제 지출 비교
- 
- ### 6. 예산 설정
- 
- - **월별 예산 설정**: 전체 월 예산 설정
- - **카테고리별 예산 설정**: 카테고리별 예산 한도 설정
- - **예산 알림**: 설정한 예산의 80% 이상 사용 시 시각적 알림
 
-### 7. 데이터 백업 및 복구
+### 사용자 관리
+- 회원가입
+- 로그인/로그아웃
+- 프로필 관리
 
-- **자동 백업**: 주기적인 데이터 백업
-- **수동 백업**: 사용자가 직접 백업 파일 생성
-- **데이터 복구**: 백업 파일을 이용한 데이터 복구
-- **데이터 내보내기**: CSV, Excel 형식으로 데이터 내보내기
+### 거래 내역 관리
+- 수입/지출 등록
+- 거래 내역 조회
+- 거래 내역 수정/삭제
 
-### 8. 알림 기능
+### 카테고리 관리
+- 카테고리 생성
+- 카테고리 수정/삭제
+- 카테고리별 통계
 
-- **예산 초과 알림**: 카테고리별 예산 초과 시 알림
-- **정기 거래 알림**: 정기적인 수입/지출 알림
-- **월간 리포트**: 월간 소비 패턴 리포트 제공
+### 통계 및 분석
+- 월별 통계
+- 기간별 추이
+- 예산 대비 지출 분석
 
-## 요구사항
+### 데이터 백업 및 복구
+- 자동 백업
+- 수동 백업
+- 백업 데이터 복구
 
-- JDK 21
-- Gradle 8.5
-- MySQL 8.0
+### 알림 기능
+- 예산 초과 알림
+- 정기 거래 알림
+- 시스템 알림
 
 ## 실행 방법
 
-1. MySQL 서버 실행
-2. application.yml 설정
-3. 프로젝트 실행
-```bash
-./gradlew bootRun
-```
+### Docker를 사용한 실행
+
+1. Docker와 Docker Compose 설치
+   - [Docker 설치 가이드](https://docs.docker.com/get-docker/)
+   - [Docker Compose 설치 가이드](https://docs.docker.com/compose/install/)
+
+2. 프로젝트 클론
+   ```bash
+   git clone https://github.com/GYUTORY/mini-budget-tracker.git
+   cd mini-budget-tracker
+   ```
+
+3. Docker Compose로 실행
+   ```bash
+   docker-compose up -d
+   ```
+
+4. 서비스 접속
+   - 애플리케이션: http://localhost:8080
+   - MySQL: localhost:3306
+   - MongoDB: localhost:27017
+   - Redis: localhost:6379
+
+### 개발 환경 설정
+
+1. JDK 21 설치
+2. Maven 설치
+3. 프로젝트 빌드
+   ```bash
+   mvn clean package
+   ```
+4. 애플리케이션 실행
+   ```bash
+   java -jar target/*.jar
+   ```
 
 ## API 문서
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
+- [Swagger UI](http://localhost:8080/swagger-ui.html)
+- [OpenAPI 문서](http://localhost:8080/v3/api-docs)
 
-## 테스트 실행
+## 환경 변수
 
-```bash
-./gradlew test
-```
+### 애플리케이션
+- `SPRING_DATASOURCE_URL`: MySQL 데이터베이스 URL
+- `SPRING_DATASOURCE_USERNAME`: MySQL 사용자 이름
+- `SPRING_DATASOURCE_PASSWORD`: MySQL 비밀번호
+- `SPRING_DATA_MONGODB_URI`: MongoDB 연결 URI
+- `SPRING_REDIS_HOST`: Redis 호스트
+- `SPRING_REDIS_PORT`: Redis 포트
+
+### MySQL
+- `MYSQL_ROOT_PASSWORD`: root 사용자 비밀번호
+- `MYSQL_DATABASE`: 데이터베이스 이름
+- `MYSQL_USER`: 일반 사용자 이름
+- `MYSQL_PASSWORD`: 일반 사용자 비밀번호
+
+### MongoDB
+- `MONGO_INITDB_ROOT_USERNAME`: root 사용자 이름
+- `MONGO_INITDB_ROOT_PASSWORD`: root 사용자 비밀번호
+- `MONGO_INITDB_DATABASE`: 데이터베이스 이름
+
+## 라이센스
+
+MIT License
