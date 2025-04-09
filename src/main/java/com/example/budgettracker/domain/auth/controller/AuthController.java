@@ -33,7 +33,7 @@ import java.util.Map;
  * @RequestMapping: 기본 URL 경로 설정
  * @RequiredArgsConstructor: final 필드에 대한 생성자 자동 생성
  */
-@Tag(name = "인증", description = "인증 관련 API")
+@Tag(name = "인증", description = "회원가입, 로그인 등 인증 관련 API")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -42,7 +42,7 @@ public class AuthController {
     private final UserService userService;
 
     /**
-     * 회원가입 API
+     * 회원가입 API (/api/auth/signup)
      * 
      * 기능:
      * - 새로운 사용자 등록
@@ -64,7 +64,11 @@ public class AuthController {
      * @param request 회원가입 요청 데이터
      * @return 회원가입 응답 데이터
      */
-    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
+    @Operation(
+        summary = "회원가입", 
+        description = "새로운 사용자를 등록합니다.\n\n" +
+                     "API 경로: POST /api/auth/signup"
+    )
     @PostMapping("/signup")
     public ResponseEntity<Map<String, Object>> signup(@Valid @RequestBody SignupRequest request) {
         User user = userService.signup(request);

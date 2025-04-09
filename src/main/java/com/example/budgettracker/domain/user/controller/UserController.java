@@ -31,11 +31,11 @@ import java.util.HashMap;
  * 사용자 관련 API를 제공하는 컨트롤러
  * 
  * 주요 기능:
- * - 이메일 중복 확인 (/api/user/check-email)
- * - 로그아웃 (/api/user/logout)
- * - 프로필 조회 (/api/user/me)
- * - 프로필 수정 (/api/user/profile)
- * - 사용자 정보 수정 (/api/user/me)
+ * - 이메일 중복 확인 (/api/users/check-email)
+ * - 로그아웃 (/api/users/logout)
+ * - 프로필 조회 (/api/users/me)
+ * - 프로필 수정 (/api/users/profile)
+ * - 사용자 정보 수정 (/api/users/me)
  * 
  * 보안:
  * - 대부분의 엔드포인트는 인증 필요
@@ -48,9 +48,9 @@ import java.util.HashMap;
  * @RequiredArgsConstructor: final 필드에 대한 생성자 자동 생성
  */
 @Tag(name = "사용자", description = "사용자 관련 API")
-@RestController // 이 클래스가 REST API 컨트롤러임을 명시 (JSON 반환)
-@RequestMapping("/api/users") // 이 컨트롤러의 공통 URL Prefix 지정
-@RequiredArgsConstructor // Lombok: final 필드를 자동으로 생성자 주입
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService; // 회원가입 로직을 처리할 서비스 클래스 주입
