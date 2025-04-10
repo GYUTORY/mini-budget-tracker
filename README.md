@@ -69,6 +69,147 @@
    - MongoDB: localhost:27017
    - Redis: localhost:6379
 
+### Docker 상세 실행 가이드
+
+1. Dockerfile 생성 (프로젝트 루트 디렉토리에 없는 경우)
+   ```dockerfile
+   FROM eclipse-temurin:21-jdk as build
+   WORKDIR /workspace/app
+
+   COPY mvnw .
+   COPY .mvn .mvn
+   COPY pom.xml .
+   COPY src src
+
+   RUN ./mvnw install -DskipTests
+   RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
+
+   FROM eclipse-temurin:21-jre
+   VOLUME /tmp
+   ARG DEPENDENCY=/workspace/app/target/dependency
+   COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
+   COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+   COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+   ENTRYPOINT ["java","-cp","app:app/lib/*","com.example.budgettracker.BudgetTrackerApplication"]
+   ```
+
+2. docker-compose.yml 생성 (프로젝트 루트 디렉토리에 없는 경우)
+   ```yaml
+   version: '3.8'
+
+   services:
+     app:
+       build: .
+       ports:
+         - "8080:8080"
+       depends_on:
+         - mysql
+         - redis
+         - mongodb
+       environment:
+         - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/budget_tracker?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+         - SPRING_DATASOURCE_USERNAME=root
+         - SPRING_DATASOURCE_PASSWORD=root
+         - SPRING_DATA_MONGODB_URI=mongodb://root:root@mongodb:27017/budget_tracker?authSource=admin
+         - SPRING_REDIS_HOST=redis
+         - SPRING_REDIS_PORT=6379
+       networks:
+         - budget-network
+
+     mysql:
+       image: mysql:8.0
+       ports:
+         - "3306:3306"
+       environment:
+         - MYSQL_ROOT_PASSWORD=root
+         - MYSQL_DATABASE=budget_tracker
+       volumes:
+         - mysql-data:/var/lib/mysql
+       networks:
+         - budget-network
+
+     mongodb:
+       image: mongo:latest
+       ports:
+         - "27017:27017"
+       environment:
+         - MONGO_INITDB_ROOT_USERNAME=root
+         - MONGO_INITDB_ROOT_PASSWORD=root
+         - MONGO_INITDB_DATABASE=budget_tracker
+       volumes:
+         - mongo-data:/data/db
+       networks:
+         - budget-network
+
+     redis:
+       image: redis:latest
+       ports:
+         - "6379:6379"
+       volumes:
+         - redis-data:/data
+       networks:
+         - budget-network
+
+   networks:
+     budget-network:
+       driver: bridge
+
+   volumes:
+     mysql-data:
+     mongo-data:
+     redis-data:
+   ```
+
+3. Docker 환경에서 빌드 및 실행
+   ```bash
+   # 빌드만 실행
+   docker-compose build
+
+   # 모든 서비스 시작
+   docker-compose up -d
+
+   # 로그 확인
+   docker-compose logs -f
+
+   # 특정 서비스 로그 확인
+   docker-compose logs -f app
+   ```
+
+4. Docker 컨테이너 및 리소스 관리
+   ```bash
+   # 실행 중인 컨테이너 확인
+   docker-compose ps
+
+   # 컨테이너 중지
+   docker-compose stop
+
+   # 컨테이너 재시작
+   docker-compose restart
+
+   # 컨테이너 및 네트워크 삭제 (볼륨은 유지)
+   docker-compose down
+
+   # 컨테이너, 네트워크 및 볼륨 모두 삭제
+   docker-compose down -v
+   ```
+
+5. 데이터베이스 접속
+   ```bash
+   # MySQL 접속
+   docker exec -it budget-tracker_mysql_1 mysql -u root -p
+
+   # MongoDB 접속
+   docker exec -it budget-tracker_mongodb_1 mongosh -u root -p
+   
+   # Redis 접속
+   docker exec -it budget-tracker_redis_1 redis-cli
+   ```
+
+6. 문제 해결
+   - 포트 충돌: 이미 사용 중인 포트가 있는 경우 docker-compose.yml 파일에서 포트 매핑 변경
+   - 볼륨 마운트 문제: `docker volume ls` 및 `docker volume rm` 명령어로 볼륨 관리
+   - 컨테이너 로그 확인: `docker-compose logs -f [서비스명]`으로 오류 확인
+
 ### 개발 환경 설정
 
 1. JDK 21 설치
