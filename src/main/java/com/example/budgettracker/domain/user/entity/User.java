@@ -41,8 +41,8 @@ public class User {
      * @Column: 컬럼 정보 설정
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     /**
      * 사용자 이메일
